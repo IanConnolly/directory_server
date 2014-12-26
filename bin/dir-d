@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+require 'directory_server'
+require 'optparse'
+
+options = {}
+
+opt_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: dfs [options]"
+
+  opts.on("--port N", Integer, "Port for server to listen on") do |port|
+    options[:port] = port
+  end
+end
+
+opt_parser.parse!
+
+DirectoryServer::Server.run options
