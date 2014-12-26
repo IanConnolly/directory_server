@@ -72,6 +72,7 @@ module DirectoryServer
                     puts "Invalidating file #{file_name} on #{srv}"
                     sock.puts "INVALIDATE FILE=#{file_name}"
                   end
+                end
               end
               puts "Invalidating directory position for #{file_name}"
               @@files.remove(file_hash)
