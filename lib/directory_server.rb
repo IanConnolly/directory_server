@@ -46,8 +46,8 @@ module DirectoryServer
             file_name = request.split()[2].split('=')[1]
             file_hash = Digest::MD5.hexdigest(file_name)
             if @@files.include? file_hash
-              #TODO ping peers
-              peers = files[file_hash]
+              peers = @@files[file_hash].dup
+              peers.delete(server_name)
               peer = @@fileservers[peers[0]][:host] + ":" + @@fileservers[peers[0]][:port]
               puts "Found file on peer: #{peer}"
               client.puts "LOCATION PEER=#{peer}"
@@ -68,11 +68,10 @@ module DirectoryServer
             if @@files.include? file_hash
               @@files[file_hash].each do |srv|
                 unless srv == server_name
-                  TCPSocket.new @@fileservers[server_name][:host], @@fileservers[server_name][:port] do |sock|
-                    puts "Invalidating file #{file_name} on #{server_name}"
-                    sock.write "INVALIDATE FILE=#{file_name}"
+                  TCPSocket.open @@fileservers[srv][:host], @@fileservers[srv][:port] do |sock|
+                    puts "Invalidating file #{file_name} on #{srv}"
+                    sock.puts "INVALIDATE FILE=#{file_name}"
                   end
-                end
               end
               puts "Invalidating directory position for #{file_name}"
               @@files.remove(file_hash)
@@ -119,7 +118,7 @@ module DirectoryServer
             file_name = request.split()[2].split('=')[1]
             file_hash = Digest::MD5.hexdigest(file_name)
             @@files[file_hash] << server_name
-            puts "Registed #{file_name} as being on #{server_name}"
+            puts "Registered #{file_name} as being on #{server_name}"
             client.puts "STATUS=OKAY"
           else
             puts "Did not recognise client #{server_name}"
